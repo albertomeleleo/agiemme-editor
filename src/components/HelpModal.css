@@ -1,0 +1,51 @@
+.help-modal {
+    max-width: 800px;
+    width: 90%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    color: #333;
+}
+
+.app.dark-mode .help-modal {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.help-content {
+    overflow-y: auto;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.help-content h1,
+.help-content h2,
+.help-content h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    color: var(--text-primary);
+}
+
+.help-content h1:first-child {
+    margin-top: 0;
+}
+
+.help-content ul {
+    padding-left: 20px;
+}
+
+.help-content li {
+    margin-bottom: 8px;
+}
+
+.help-content code {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.app.dark-mode .help-content code {
+    background-color: rgba(255, 255, 255, 0.1);
+}

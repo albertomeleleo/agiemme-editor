@@ -19,7 +19,7 @@ const MERMAID_THEMES = [
   { id: 'base', name: 'Base' }
 ];
 
-const Preview = ({ content }) => {
+const Preview = ({ content, isDarkMode }) => {
   const containerRef = useRef(null);
   const previewRef = useRef(null);
   const mermaidRef = useRef(null); // Ref to the SVG element
@@ -31,7 +31,12 @@ const Preview = ({ content }) => {
 
   const [isRendering, setIsRendering] = useState(false);
   const [debouncedContent, setDebouncedContent] = useState(content);
-  const [theme, setTheme] = useState('default');
+  const [theme, setTheme] = useState(isDarkMode ? 'dark' : 'forest');
+
+  // Sync theme with isDarkMode prop
+  useEffect(() => {
+    setTheme(isDarkMode ? 'dark' : 'forest');
+  }, [isDarkMode]);
 
   // Debounce content update
   useEffect(() => {

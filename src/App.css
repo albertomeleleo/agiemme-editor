@@ -1,8 +1,18 @@
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+  --accent-color: #667eea;
+}
+
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .app-header {
@@ -230,8 +240,15 @@ button:disabled {
 
 /* Dark Mode Styles */
 .app.dark-mode {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #252526;
+  --text-primary: #e0e0e0;
+  --text-secondary: #aaaaaa;
+  --border-color: #444444;
+  --accent-color: #764ba2;
+
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .app.dark-mode .app-header {
@@ -253,13 +270,54 @@ button:disabled {
   border-radius: 6px;
 }
 
-/* Presentation Mode */
+.sidebar-container {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  transition: width 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.sidebar-container.hidden {
+  width: 0;
+  opacity: 0;
+  border: none;
+}
+
+.sidebar-toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-right: 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
 .app.presentation-mode .app-header,
-.app.presentation-mode .file-explorer,
 .app.presentation-mode .tab-bar,
 .app.presentation-mode .editor-container,
 .app.presentation-mode .snippet-library {
   display: none !important;
+}
+
+/* FileExplorer styles need to be adjusted to fit in sidebar-container */
+.file-explorer {
+  width: 250px;
+  /* Fixed width to prevent content squishing during transition */
+  height: 100%;
+  border-right: none;
+  /* Border is handled by container */
 }
 
 .app.presentation-mode .app-content {

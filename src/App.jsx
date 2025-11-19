@@ -9,7 +9,9 @@ import HistoryPanel from './components/HistoryPanel';
 import HistoryService from './services/HistoryService';
 import SettingsModal from './components/SettingsModal';
 import AIGenerator from './components/AIGenerator';
+import HelpModal from './components/HelpModal';
 import packageJson from '../package.json'; // Import version
+import helpContent from './assets/help.md?raw';
 import './App.css';
 
 const DEFAULT_SETTINGS = {
@@ -28,7 +30,10 @@ function App() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
-    return saved ? saved === 'dark' : false;
+    if (saved) {
+      return saved === 'dark';
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
   // Settings State
@@ -42,7 +47,9 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [history, setHistory] = useState([]);
   const [toasts, setToasts] = useState([]);
@@ -341,6 +348,13 @@ function App() {
       {!isPresentationMode && (
         <header className="app-header">
           <div className="app-title">
+            <button
+              className="sidebar-toggle"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              title={isSidebarOpen ? "Chiudi Sidebar" : "Apri Sidebar"}
+            >
+              {isSidebarOpen ? '◀' : '▶'}
+            </button>
             <h1>AGiEmme Editor</h1>
             <span className="app-version">v{packageJson.version}</span>
           </div>
@@ -369,6 +383,14 @@ function App() {
                 title="Impostazioni"
               >
                 ⚙️
+              </button>
+
+              <button
+                onClick={() => setShowHelp(true)}
+                className="btn-theme"
+                title="Guida Utente"
+              >
+                ?
               </button>
             </div>
 
@@ -445,12 +467,13 @@ function App() {
       )}
 
       <div className="app-content">
-        {!isPresentationMode && (
+        {/* FileExplorer is always rendered but hidden via CSS when needed */}
+        <div className={`sidebar-container ${!isSidebarOpen || isPresentationMode ? 'hidden' : ''}`}>
           <FileExplorer
             onFileSelect={handleFileSelect}
             currentFilePath={activeFilePath}
           />
-        )}
+        </div>
 
         <div className="main-area" style={{ position: 'relative' }}>
           {files.length > 0 ? (
@@ -471,7 +494,7 @@ function App() {
                     fontSize={settings.fontSize}
                   />
                 )}
-                <Preview content={content} />
+                <Preview content={content} isDarkMode={isDarkMode} />
               </div>
             </>
           ) : (
@@ -519,6 +542,12 @@ function App() {
         onGenerate={handleAIGenerated}
         apiKey={settings.apiKey}
         provider={settings.aiProvider}
+      />
+
+      <HelpModal
+        isOpen={showHelp}
+        onClose={() => setShowHelp(false)}
+        content={helpContent}
       />
 
       {isPresentationMode && (
