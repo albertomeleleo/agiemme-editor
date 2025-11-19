@@ -11,6 +11,10 @@
   border-bottom: 1px solid #34495e;
 }
 
+.explorer-header button {
+  margin: 2px;
+}
+
 .explorer-header h3 {
   font-size: 16px;
   font-weight: 600;

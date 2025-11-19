@@ -3,6 +3,7 @@ import mermaid from 'mermaid';
 import { marked } from 'marked';
 import { jsPDF } from 'jspdf';
 import { svg2pdf } from 'svg2pdf.js';
+import { VscZoomIn, VscZoomOut, VscDebugRestart, VscExport, VscLoading } from 'react-icons/vsc';
 import './Preview.css';
 
 // Configurazione di marked
@@ -238,10 +239,10 @@ const Preview = ({ content, isDarkMode }) => {
     <div className="preview-container">
       <div className="preview-toolbar">
         <div className="zoom-controls">
-          <button onClick={handleZoomOut} title="Zoom Out">-</button>
+          <button onClick={handleZoomOut} title="Zoom Out"><VscZoomOut /></button>
           <span className="zoom-level">{Math.round(zoom * 100)}%</span>
-          <button onClick={handleZoomIn} title="Zoom In">+</button>
-          <button onClick={handleResetZoom} title="Reset View">↺</button>
+          <button onClick={handleZoomIn} title="Zoom In"><VscZoomIn /></button>
+          <button onClick={handleResetZoom} title="Reset View"><VscDebugRestart /></button>
         </div>
 
         <div className="theme-selector">
@@ -253,12 +254,12 @@ const Preview = ({ content, isDarkMode }) => {
         </div>
 
         <div className="export-controls">
-          <button onClick={() => handleExport('png')} title="Esporta PNG">PNG</button>
-          <button onClick={() => handleExport('svg')} title="Esporta SVG">SVG</button>
-          <button onClick={() => handleExport('pdf')} title="Esporta PDF">PDF</button>
+          <button onClick={() => handleExport('png')} title="Esporta PNG"><VscExport /> PNG</button>
+          <button onClick={() => handleExport('svg')} title="Esporta SVG"><VscExport /> SVG</button>
+          <button onClick={() => handleExport('pdf')} title="Esporta PDF"><VscExport /> PDF</button>
         </div>
 
-        {isRendering && <span className="rendering-indicator" title="Rendering...">⚡</span>}
+        {isRendering && <span className="rendering-indicator" title="Rendering..."><VscLoading className="spin" /></span>}
       </div>
 
       <div

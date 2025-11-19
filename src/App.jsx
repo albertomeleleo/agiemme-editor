@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  VscChevronLeft, VscChevronRight, VscColorMode, VscSettingsGear,
+  VscQuestion, VscEdit, VscPreview, VscSymbolSnippet, VscSparkle,
+  VscHistory, VscScreenFull, VscSave, VscSaveAs, VscClose
+} from 'react-icons/vsc';
 import FileExplorer from './components/FileExplorer';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
@@ -353,7 +358,7 @@ function App() {
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               title={isSidebarOpen ? "Chiudi Sidebar" : "Apri Sidebar"}
             >
-              {isSidebarOpen ? '◀' : '▶'}
+              {isSidebarOpen ? <VscChevronLeft /> : <VscChevronRight />}
             </button>
             <h1>AGiEmme Editor</h1>
             <span className="app-version">v{packageJson.version}</span>
@@ -374,7 +379,7 @@ function App() {
                 className="btn-theme"
                 title="Toggle Dark/Light Mode"
               >
-                {isDarkMode ? '☀️' : '🌙'}
+                <VscColorMode />
               </button>
 
               <button
@@ -382,7 +387,7 @@ function App() {
                 className="btn-theme"
                 title="Impostazioni"
               >
-                ⚙️
+                <VscSettingsGear />
               </button>
 
               <button
@@ -390,7 +395,7 @@ function App() {
                 className="btn-theme"
                 title="Guida Utente"
               >
-                ?
+                <VscQuestion />
               </button>
             </div>
 
@@ -400,7 +405,7 @@ function App() {
                 className={isEditMode ? 'btn-mode active' : 'btn-mode'}
                 title="Modalità Edit (Ctrl+E)"
               >
-                {isEditMode ? '📝 Edit' : '👁️ View'}
+                {isEditMode ? <><VscEdit /> Edit</> : <><VscPreview /> View</>}
               </button>
             )}
 
@@ -411,14 +416,14 @@ function App() {
                   className={`btn-mode ${showSnippets ? 'active' : ''}`}
                   title="Mostra/Nascondi Snippets"
                 >
-                  🧩 Snippets
+                  <VscSymbolSnippet /> Snippets
                 </button>
                 <button
                   onClick={() => setShowAI(true)}
                   className="btn-mode ai-btn"
                   title="Genera con AI"
                 >
-                  ✨ AI
+                  <VscSparkle /> AI
                 </button>
               </>
             )}
@@ -430,14 +435,14 @@ function App() {
                   className={`btn-mode ${showHistory ? 'active' : ''}`}
                   title="Cronologia Versioni"
                 >
-                  🕒 Storia
+                  <VscHistory /> Storia
                 </button>
                 <button
                   onClick={() => setIsPresentationMode(true)}
                   className="btn-mode"
                   title="Modalità Presentazione"
                 >
-                  📺 Presentazione
+                  <VscScreenFull /> Presentazione
                 </button>
               </>
             )}
@@ -450,7 +455,7 @@ function App() {
                   className="btn-primary"
                   title="Salva (Ctrl+S)"
                 >
-                  {isSaving ? '...' : 'Salva'}
+                  {isSaving ? '...' : <><VscSave /> Salva</>}
                 </button>
                 <button
                   onClick={handleSaveAs}
@@ -458,7 +463,7 @@ function App() {
                   className="btn-secondary"
                   title="Salva come (Ctrl+Shift+S)"
                 >
-                  {isSaving ? '...' : 'Salva come...'}
+                  {isSaving ? '...' : <><VscSaveAs /> Salva come...</>}
                 </button>
               </>
             )}
@@ -556,7 +561,7 @@ function App() {
           onClick={() => setIsPresentationMode(false)}
           title="Esci dalla presentazione (Esc)"
         >
-          ×
+          <VscClose />
         </button>
       )}
 

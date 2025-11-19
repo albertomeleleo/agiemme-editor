@@ -1,6 +1,6 @@
 {
   "name": "agiemme-editor",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "AGiEmme Editor - Editor per file Mermaid e Markdown con Electron, React e Node",
   "main": "main.js",
   "homepage": "./",
@@ -39,6 +39,7 @@
     "mermaid": "^10.6.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
     "svg2pdf.js": "^2.6.0"
   },
   "devDependencies": {

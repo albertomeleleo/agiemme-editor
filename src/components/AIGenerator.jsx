@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { VscClose, VscSparkle, VscLoading } from 'react-icons/vsc';
 import './SettingsModal.css'; // Reuse modal styles
 
 const AIGenerator = ({ isOpen, onClose, onGenerate, apiKey, provider }) => {
@@ -33,11 +34,11 @@ const AIGenerator = ({ isOpen, onClose, onGenerate, apiKey, provider }) => {
                         messages: [
                             {
                                 role: "system",
-                                content: "You are an expert in Mermaid.js. Generate ONLY the Mermaid code for the requested diagram. Do not include markdown code blocks (```mermaid), just the raw code. If the user asks for something impossible, return a comment explaining why."
+                                content: "Sei un esperto di Mermaid.js. Genera SOLO il codice Mermaid valido per il diagramma richiesto. Non aggiungere spiegazioni o markdown (```mermaid)."
                             },
                             {
                                 role: "user",
-                                content: prompt
+                                content: `Crea un diagramma Mermaid per: ${prompt}`
                             }
                         ],
                         temperature: 0.7
@@ -59,29 +60,31 @@ const AIGenerator = ({ isOpen, onClose, onGenerate, apiKey, provider }) => {
                     headers: {
                         'x-api-key': apiKey,
                         'anthropic-version': '2023-06-01',
-                        'content-type': 'application/json',
-                        'dangerously-allow-browser': 'true' // Only for dev/testing
+                        'content-type': 'application/json'
                     },
                     body: JSON.stringify({
                         model: "claude-3-haiku-20240307",
                         max_tokens: 1024,
-                        system: "You are an expert in Mermaid.js. Generate ONLY the Mermaid code for the requested diagram. Do not include markdown code blocks (```mermaid), just the raw code.",
                         messages: [
-                            { role: "user", content: prompt }
+                            { role: "user", content: `Genera SOLO il codice Mermaid valido per: ${prompt}. Non aggiungere spiegazioni o markdown.` }
                         ]
                     })
                 });
 
+                // Note: Anthropic API calls from browser might fail due to CORS if not proxied.
+                // In a real Electron app, we should use ipcRenderer to call via main process.
+                // For this demo, we assume it might work or fail.
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
                 generatedCode = data.content[0].text.trim();
             }
 
             // Clean up code blocks if the LLM included them anyway
-            generatedCode = generatedCode.replace(/^```mermaid\n/, '').replace(/^```\n/, '').replace(/```$/, '');
+            generatedCode = generatedCode.replace(/^```mermaid\n/, '').replace(/^```\n/, '').replace(/\n```$/, '');
 
             onGenerate(generatedCode);
             onClose();
+            setPrompt('');
         } catch (err) {
             setError(err.message);
         } finally {
@@ -91,31 +94,30 @@ const AIGenerator = ({ isOpen, onClose, onGenerate, apiKey, provider }) => {
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content ai-modal">
+            <div className="modal-content settings-modal">
                 <div className="modal-header">
-                    <h2>Generatore Diagrammi AI ✨</h2>
-                    <button className="close-btn" onClick={onClose}>×</button>
+                    <h2><VscSparkle /> Genera Diagramma AI</h2>
+                    <button className="close-btn" onClick={onClose}><VscClose /></button>
                 </div>
 
                 <div className="modal-body">
-                    <div className="setting-group">
-                        <label>Descrivi il diagramma che vuoi creare:</label>
-                        <textarea
-                            rows="5"
-                            value={prompt}
-                            onChange={(e) => setPrompt(e.target.value)}
-                            placeholder="Es. Un diagramma di flusso per il processo di registrazione utente, con verifica email e gestione errori."
-                            disabled={isLoading}
-                        />
-                    </div>
+                    <p>Descrivi il diagramma che vuoi creare:</p>
+                    <textarea
+                        rows="5"
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Es. Un diagramma di flusso per un processo di login..."
+                        disabled={isLoading}
+                        style={{ width: '100%', padding: '8px', marginTop: '10px' }}
+                    />
 
-                    {error && <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+                    {error && <p className="error-message" style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
                 </div>
 
                 <div className="modal-footer">
                     <button className="btn-secondary" onClick={onClose} disabled={isLoading}>Annulla</button>
                     <button className="btn-primary" onClick={handleGenerate} disabled={isLoading || !prompt.trim()}>
-                        {isLoading ? 'Generazione...' : 'Genera Diagramma'}
+                        {isLoading ? <><VscLoading className="spin" /> Generazione...</> : 'Genera'}
                     </button>
                 </div>
             </div>

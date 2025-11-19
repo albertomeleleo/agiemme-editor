@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { VscClose, VscNewFile } from 'react-icons/vsc';
 import './NewFileModal.css';
 
 const NewFileModal = ({ isOpen, onClose, onCreate }) => {
@@ -6,9 +7,14 @@ const NewFileModal = ({ isOpen, onClose, onCreate }) => {
     const inputRef = useRef(null);
 
     useEffect(() => {
-        if (isOpen && inputRef.current) {
-            inputRef.current.focus();
+        if (isOpen) {
             setFileName('');
+            // Focus input when modal opens
+            setTimeout(() => {
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                }
+            }, 100);
         }
     }, [isOpen]);
 
@@ -16,40 +22,36 @@ const NewFileModal = ({ isOpen, onClose, onCreate }) => {
         e.preventDefault();
         if (fileName.trim()) {
             onCreate(fileName.trim());
-            onClose();
+            setFileName('');
         }
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-content new-file-modal">
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content new-file-modal" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>Nuovo File</h2>
-                    <button className="close-btn" onClick={onClose}>×</button>
+                    <h2><VscNewFile /> Nuovo File</h2>
+                    <button className="close-btn" onClick={onClose} title="Chiudi"><VscClose /></button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
-                        <label htmlFor="filename">Nome del file:</label>
+                        <label htmlFor="filename-input">Nome del file:</label>
                         <input
-                            type="text"
-                            id="filename"
+                            id="filename-input"
                             ref={inputRef}
+                            type="text"
                             value={fileName}
                             onChange={(e) => setFileName(e.target.value)}
-                            placeholder="es: diagramma.md"
-                            required
+                            placeholder="Es. diagramma.md"
+                            autoComplete="off"
                         />
-                        <small>Estensioni supportate: .md, .mmd</small>
+                        <p className="hint-text">Estensioni supportate: .md, .mmd, .mermaid</p>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn-secondary" onClick={onClose}>
-                            Annulla
-                        </button>
-                        <button type="submit" className="btn-primary">
-                            Crea
-                        </button>
+                        <button type="button" className="btn-secondary" onClick={onClose}>Annulla</button>
+                        <button type="submit" className="btn-primary" disabled={!fileName.trim()}>Crea</button>
                     </div>
                 </form>
             </div>

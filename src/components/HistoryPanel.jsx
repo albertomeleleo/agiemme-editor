@@ -1,31 +1,31 @@
 import React from 'react';
+import { VscClose, VscHistory } from 'react-icons/vsc';
 import './HistoryPanel.css';
 
 const HistoryPanel = ({ history, onRestore, onClose }) => {
-    const formatDate = (isoString) => {
-        return new Date(isoString).toLocaleString();
-    };
-
     return (
         <div className="history-panel">
             <div className="history-header">
-                <h3>Cronologia Locale</h3>
-                <button className="close-btn" onClick={onClose}>×</button>
+                <h3><VscHistory /> Cronologia</h3>
+                <button onClick={onClose} className="close-btn" title="Chiudi"><VscClose /></button>
             </div>
             <div className="history-list">
                 {history.length === 0 ? (
-                    <div className="history-empty">Nessuna cronologia disponibile</div>
+                    <div className="no-history">Nessuna versione salvata</div>
                 ) : (
-                    history.map((snapshot) => (
-                        <div key={snapshot.id} className="history-item">
+                    history.map((snapshot, index) => (
+                        <div key={index} className="history-item">
                             <div className="history-info">
-                                <span className="history-time">{formatDate(snapshot.timestamp)}</span>
-                                <span className="history-size">{snapshot.content.length} bytes</span>
+                                <span className="history-time">
+                                    {new Date(snapshot.timestamp).toLocaleString()}
+                                </span>
+                                <span className="history-size">
+                                    {snapshot.content.length} chars
+                                </span>
                             </div>
                             <button
-                                className="restore-btn"
                                 onClick={() => onRestore(snapshot)}
-                                title="Ripristina questa versione"
+                                className="restore-btn"
                             >
                                 Ripristina
                             </button>
