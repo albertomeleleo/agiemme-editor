@@ -1,0 +1,14 @@
+flowchart TD
+    Start[Mount Editor] --> InitCM[Initialize CodeMirror State]
+    InitCM --> ConfigExtensions[Configure Extensions]
+    ConfigExtensions --> CreateView[Create EditorView]
+    CreateView --> AttachDOM[Attach to DOM]
+    
+    UpdateProps{Content Prop Changed?} -->|Yes| Compare[Compare with Current Doc]
+    Compare -->|Different| Dispatch[Dispatch Transaction]
+    Dispatch --> UpdateView[Update Editor View]
+    
+    UserType[User Types] --> UpdateListener[Trigger Update Listener]
+    UpdateListener --> ExtractDoc[Get New Content]
+    ExtractDoc --> CallOnChange[Call onChange Prop]
+    CallOnChange --> ParentUpdate[Parent Updates State]

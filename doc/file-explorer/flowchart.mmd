@@ -1,0 +1,24 @@
+flowchart TD
+    Start[Init Component] --> CheckRoot{Root Path Set?}
+    CheckRoot -- No --> ShowSelectBtn[Show 'Select Directory' Button]
+    ShowSelectBtn --> UserSelect[User Clicks Select]
+    UserSelect --> OpenDialog[IPC: select-directory]
+    OpenDialog --> SetRoot[Set Root & Current Path]
+    SetRoot --> LoadDir[Load Directory Content]
+    
+    CheckRoot -- Yes --> LoadDir
+    LoadDir --> GetEntries[IPC: read-directory]
+    GetEntries --> Filter[Filter .md, .mmd, dirs]
+    Filter --> RenderList[Render File List]
+    
+    RenderList --> UserClick{User Clicks Item}
+    UserClick -- Directory --> UpdatePath[Update Current Path]
+    UpdatePath --> PushHistory[Add to History]
+    PushHistory --> LoadDir
+    
+    UserClick -- File --> TriggerSelect[Trigger onFileSelect]
+    
+    RenderList --> UserBack{User Clicks Back}
+    UserBack --> PopHistory[Remove last path]
+    PopHistory --> SetPrevPath[Set Previous Path]
+    SetPrevPath --> LoadDir

@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant Main as Main Process (Node.js)
+    participant Win as BrowserWindow
+    participant Preload as Preload Script
+    participant Renderer as Renderer (React)
+
+    Main->>Main: App Ready
+    Main->>Win: Create Window
+    Main->>Preload: Load Preload
+    Preload->>Preload: Setup ContextBridge
+    Preload-->>Renderer: Expose window.electronAPI
+    Main->>Renderer: Load Content (HTML/JS)
+    Renderer->>Renderer: Mount App Component
+    Renderer->>Renderer: Initialize State (useState)
+    Renderer->>Preload: Invoke IPC (e.g. read-directory)
+    Preload->>Main: ipcRenderer.invoke()
+    Main->>Main: Handle Operation
+    Main-->>Preload: Return Result
+    Preload-->>Renderer: Resolve Promise

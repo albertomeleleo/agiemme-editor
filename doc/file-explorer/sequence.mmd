@@ -1,0 +1,35 @@
+sequenceDiagram
+    actor User
+    participant FE as FileExplorer Component
+    participant IPC as Electron API
+    participant Main as Main Process
+    participant FS as File System
+
+    %% Select Root
+    User->>FE: Click "Select Directory"
+    FE->>IPC: selectDirectory()
+    IPC->>Main: invoke('select-directory')
+    Main->>User: Show Open Dialog
+    User-->>Main: Select Folder
+    Main-->>IPC: folderPath
+    IPC-->>FE: folderPath
+    FE->>FE: setRootPath(folderPath)
+    
+    %% Load Directory
+    FE->>FE: loadDirectory(folderPath)
+    FE->>IPC: readDirectory(folderPath)
+    IPC->>Main: invoke('read-directory', folderPath)
+    Main->>FS: fs.readdir(withFileTypes)
+    FS-->>Main: entries
+    Main->>Main: Filter & Sort
+    Main-->>IPC: fileList
+    IPC-->>FE: fileList
+    FE->>FE: setItems(fileList)
+    FE->>User: Render List
+
+    %% Navigation
+    User->>FE: Click Subfolder
+    FE->>FE: setCurrentPath(subfolder)
+    FE->>FE: addToHistory(subfolder)
+    FE->>FE: loadDirectory(subfolder)
+    ... (Repeat Load Directory) ...

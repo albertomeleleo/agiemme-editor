@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor User
+    participant Parent as App Component
+    participant Editor as Editor Component
+    participant CM as CodeMirror Instance
+
+    Parent->>Editor: Mount (content="...")
+    Editor->>CM: EditorState.create(doc: content)
+    Editor->>CM: new EditorView(state)
+    
+    %% User Typing
+    User->>CM: Type character
+    CM->>CM: Update State (Transaction)
+    CM->>Editor: UpdateListener(update)
+    Editor->>Parent: onChange(newContent)
+    Parent->>Parent: setContent(newContent)
+    Parent->>Parent: setHasUnsavedChanges(true)
+    
+    %% External Update (e.g. file load)
+    Parent->>Editor: Re-render (content="new text")
+    Editor->>CM: view.state.doc.toString()
+    alt Content Mismatch
+        Editor->>CM: view.dispatch({ changes: ... })
+        CM->>CM: Update View
+    end

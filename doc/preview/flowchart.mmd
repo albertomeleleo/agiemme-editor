@@ -1,0 +1,18 @@
+flowchart TD
+    Start[Receive Content] --> CheckEmpty{Is Content Empty?}
+    CheckEmpty -- Yes --> RenderEmpty[Show Empty Message]
+    CheckEmpty -- No --> CheckType{Is Mermaid?}
+    
+    CheckType -- Yes (starts with keyword) --> RenderMermaid[Render Mermaid Diagram]
+    RenderMermaid --> RunMermaid[mermaid.run()]
+    
+    CheckType -- No (Markdown) --> ConfigMarked[Configure Marked Renderer]
+    ConfigMarked --> ParseMD[Parse Markdown to HTML]
+    ParseMD --> InjectHTML[Inject HTML into DOM]
+    InjectHTML --> FindDiagrams[Find .mermaid-diagram elements]
+    FindDiagrams --> RunMermaidMD[mermaid.run(nodes)]
+    
+    RunMermaid --> HandleError{Error?}
+    RunMermaidMD --> HandleError
+    HandleError -- Yes --> ShowError[Render Error Message]
+    HandleError -- No --> Success[Display Content]

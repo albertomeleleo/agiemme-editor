@@ -1,0 +1,41 @@
+sequenceDiagram
+    actor User
+    participant App as App Component
+    participant IPC as Electron API
+    participant Main as Main Process
+    participant FS as File System
+
+    %% Open File Flow
+    User->>App: Click File in Explorer
+    App->>App: Check hasUnsavedChanges
+    alt Unsaved Changes
+        App->>User: Confirm Discard?
+        User-->>App: Yes
+    end
+    App->>IPC: readFile(path)
+    IPC->>Main: invoke('read-file', path)
+    Main->>FS: fs.readFile(path)
+    FS-->>Main: content
+    Main-->>IPC: content
+    IPC-->>App: content
+    App->>App: setContent(content), setCurrentFile(path)
+
+    %% Save Flow
+    User->>App: Click Save (Ctrl+S)
+    alt New File (No Path)
+        App->>IPC: saveFileAs(content)
+        IPC->>Main: invoke('save-file-as')
+        Main->>User: Show Save Dialog
+        User-->>Main: Select Path
+        Main->>FS: fs.writeFile(path, content)
+        Main-->>IPC: newPath
+        IPC-->>App: newPath
+        App->>App: setCurrentFile(newPath)
+    else Existing File
+        App->>IPC: saveFile(path, content)
+        IPC->>Main: invoke('save-file', path, content)
+        Main->>FS: fs.writeFile(path, content)
+        Main-->>IPC: success
+    end
+    App->>App: setHasUnsavedChanges(false)
+    App->>User: Show Success Message

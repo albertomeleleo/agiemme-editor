@@ -1,0 +1,30 @@
+sequenceDiagram
+    actor User
+    participant Preview as Preview Component
+    participant Marked as Marked Library
+    participant Mermaid as Mermaid Library
+    participant DOM as DOM Element
+
+    User->>Preview: Update Content
+    Preview->>Preview: useEffect(content)
+    
+    alt is Mermaid Code
+        Preview->>DOM: Set innerHTML (container div)
+        Preview->>Mermaid: run({ nodes: [div] })
+        Mermaid->>DOM: Generate SVG
+    else is Markdown
+        Preview->>Marked: parse(content)
+        Marked-->>Preview: HTML string
+        Preview->>DOM: Set innerHTML
+        Preview->>DOM: querySelectorAll('.mermaid-diagram')
+        opt Found Diagrams
+            Preview->>Mermaid: run({ nodes: list })
+            Mermaid->>DOM: Generate SVGs
+        end
+    end
+
+    %% Zoom/Pan Interaction
+    User->>DOM: Mouse Wheel (Ctrl+Scroll)
+    DOM->>Preview: Event Listener
+    Preview->>Preview: setZoom(newZoom)
+    Preview->>DOM: Update Transform Style

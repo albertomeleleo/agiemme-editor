@@ -1,0 +1,28 @@
+flowchart TD
+    Start([User Action]) --> ActionType{Action Type}
+    
+    ActionType -- Open File --> SelectFile[Select File in Explorer]
+    SelectFile --> CheckUnsaved{Unsaved Changes?}
+    CheckUnsaved -- Yes --> Confirm[Show Confirmation Dialog]
+    Confirm -- Cancel --> End([Cancel])
+    Confirm -- Proceed --> ReadFile[IPC: read-file]
+    CheckUnsaved -- No --> ReadFile
+    ReadFile --> UpdateState[Update Content & CurrentFile]
+    
+    ActionType -- Save --> HasPath{Has File Path?}
+    HasPath -- Yes --> WriteFile[IPC: save-file]
+    HasPath -- No --> SaveAs
+    
+    ActionType -- Save As --> SaveAs[IPC: save-file-as]
+    SaveAs --> ShowDialog[Show Save Dialog]
+    ShowDialog --> WriteFile
+    
+    WriteFile --> UpdateSaved[Set UnsavedChanges = false]
+    UpdateSaved --> Notify[Show Success Alert]
+    
+    ActionType -- Create New --> PromptName[Prompt File Name]
+    PromptName --> ValidateName{Valid Name?}
+    ValidateName -- No --> End
+    ValidateName -- Yes --> IPC_Create[IPC: create-file]
+    IPC_Create --> LoadDir[Reload Directory]
+    LoadDir --> SelectNew[Select New File]

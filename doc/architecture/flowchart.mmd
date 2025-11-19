@@ -1,0 +1,12 @@
+flowchart TD
+    Start[Application Start] --> InitMain[Initialize Main Process]
+    InitMain --> CreateWin[Create Browser Window]
+    CreateWin --> LoadContent{Dev Mode?}
+    LoadContent -- Yes --> LoadVite[Load localhost:5173]
+    LoadContent -- No --> LoadDist[Load dist/index.html]
+    LoadVite --> InitPreload[Execute Preload Script]
+    LoadDist --> InitPreload
+    InitPreload --> ExposeAPI[Expose electronAPI to Window]
+    ExposeAPI --> MountReact[Mount React App]
+    MountReact --> InitState[Initialize Global State]
+    InitState --> Ready[Application Ready]

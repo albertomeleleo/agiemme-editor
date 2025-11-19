@@ -1,0 +1,233 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-right: 10px;
+  padding-right: 15px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auto-save-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+}
+
+.auto-save-toggle input {
+  cursor: pointer;
+}
+
+.file-name {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-right: auto;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+}
+
+.editor-preview-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* In modalità view, il preview occupa tutto lo spazio */
+.editor-preview-container.view-mode {
+  display: flex;
+}
+
+.editor-preview-container.view-mode .preview-container {
+  flex: 1;
+  border-right: none;
+}
+
+/* In modalità edit, editor e preview sono affiancati */
+.editor-preview-container.edit-mode {
+  display: flex;
+}
+
+.editor-preview-container.edit-mode .editor-container {
+  flex: 1;
+}
+
+.editor-preview-container.edit-mode .preview-container {
+  flex: 1;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.empty-state-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.empty-state h2 {
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+.shortcuts-info {
+  margin-top: 30px;
+  text-align: left;
+  background-color: var(--bg-secondary);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.shortcuts-info ul {
+  margin: 10px 0 0 0;
+  padding-left: 20px;
+}
+
+.shortcuts-info li {
+  margin-bottom: 5px;
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-secondary {
+  background-color: #2196f3;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #1976d2;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-mode {
+  background-color: #ff9800;
+  color: white;
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+.btn-mode:hover {
+  background-color: #f57c00;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.btn-mode.active {
+  background-color: #9c27b0;
+}
+
+.btn-mode.active:hover {
+  background-color: #7b1fa2;
+  box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+}
+
+.btn-theme {
+  background-color: #ffc107;
+  color: white;
+  font-size: 18px;
+  padding: 6px 12px;
+  min-width: 44px;
+}
+
+.btn-theme:hover {
+  background-color: #ffb300;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+/* Dark Mode Styles */
+.app.dark-mode {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.app.dark-mode .app-header {
+  background: linear-gradient(135deg, #3a3a52 0%, #4a2c5a 100%);
+}
+
+.app.dark-mode .file-name {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #e0e0e0;
+}
+
+.app.dark-mode .app-content {
+  background-color: #1e1e1e;
+}
