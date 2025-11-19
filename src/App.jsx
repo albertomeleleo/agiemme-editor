@@ -5,7 +5,19 @@ import Preview from './components/Preview';
 import Toast from './components/Toast';
 import SnippetLibrary from './components/SnippetLibrary';
 import TabBar from './components/TabBar';
+import HistoryPanel from './components/HistoryPanel';
+import HistoryService from './services/HistoryService';
+import SettingsModal from './components/SettingsModal';
+import AIGenerator from './components/AIGenerator';
+import packageJson from '../package.json'; // Import version
 import './App.css';
+
+const DEFAULT_SETTINGS = {
+  fontSize: 14,
+  autoSaveInterval: 2000,
+  aiProvider: 'openai',
+  apiKey: ''
+};
 
 function App() {
   // State for multi-tab
@@ -18,8 +30,21 @@ function App() {
     const saved = localStorage.getItem('theme');
     return saved ? saved === 'dark' : false;
   });
+
+  // Settings State
+  const [settings, setSettings] = useState(() => {
+    const saved = localStorage.getItem('appSettings');
+    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+  });
+
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
   const [showSnippets, setShowSnippets] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAI, setShowAI] = useState(false);
+  const [isPresentationMode, setIsPresentationMode] = useState(false);
+
+  const [history, setHistory] = useState([]);
   const [toasts, setToasts] = useState([]);
   const autoSaveTimerRef = useRef(null);
 
@@ -36,6 +61,18 @@ function App() {
   const removeToast = useCallback((id) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
+
+  // Save settings to localStorage
+  useEffect(() => {
+    localStorage.setItem('appSettings', JSON.stringify(settings));
+  }, [settings]);
+
+  // Load history when active file changes or history panel is opened
+  useEffect(() => {
+    if (activeFilePath && showHistory) {
+      setHistory(HistoryService.getHistory(activeFilePath));
+    }
+  }, [activeFilePath, showHistory]);
 
   // Carica il file selezionato (apre in nuovo tab o switcha a esistente)
   const handleFileSelect = async (filePath) => {
@@ -58,6 +95,27 @@ function App() {
       setIsEditMode(false); // Default view mode for new files
     } catch (error) {
       addToast('Errore nel caricamento del file: ' + error.message, 'error');
+    }
+  };
+
+  // Gestione Drag & Drop
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+
+    if (droppedFiles.length > 0) {
+      // In Electron, File object has 'path' property
+      const filePath = droppedFiles[0].path;
+      if (filePath) {
+        await handleFileSelect(filePath);
+      }
     }
   };
 
@@ -106,6 +164,35 @@ function App() {
     addToast('Snippet inserito', 'info');
   };
 
+  // Inserisce codice generato dall'AI
+  const handleAIGenerated = (code) => {
+    if (!activeFilePath) {
+      // Se non c'è file aperto, creane uno nuovo (todo: implementare createNewFile)
+      // Per ora avvisa
+      addToast('Apri un file prima di generare un diagramma', 'warning');
+      return;
+    }
+
+    // Sostituisci o appendi? Per ora appendiamo
+    const newContent = content + (content ? '\n\n' : '') + code;
+    handleContentChange(newContent);
+    addToast('Diagramma generato con successo!', 'success');
+  };
+
+  // Ripristina una versione dalla cronologia
+  const handleRestoreVersion = (snapshot) => {
+    if (!activeFilePath) return;
+
+    const confirmed = window.confirm(
+      `Sei sicuro di voler ripristinare la versione del ${new Date(snapshot.timestamp).toLocaleString()}? Le modifiche attuali андranno perse.`
+    );
+
+    if (confirmed) {
+      handleContentChange(snapshot.content);
+      addToast('Versione ripristinata', 'success');
+    }
+  };
+
   // Salva il file corrente
   const handleSave = async (silent = false) => {
     if (!activeFilePath) {
@@ -116,6 +203,12 @@ function App() {
     setIsSaving(true);
     try {
       await window.electronAPI.saveFile(activeFilePath, content);
+
+      // Save snapshot to local history
+      HistoryService.saveSnapshot(activeFilePath, content);
+      if (showHistory) {
+        setHistory(HistoryService.getHistory(activeFilePath));
+      }
 
       setFiles(prev => prev.map(f => {
         if (f.path === activeFilePath) {
@@ -139,13 +232,13 @@ function App() {
 
       autoSaveTimerRef.current = setTimeout(() => {
         handleSave(true);
-      }, 2000); // Auto-save after 2 seconds of inactivity
+      }, settings.autoSaveInterval); // Use configured interval
     }
 
     return () => {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-  }, [content, autoSaveEnabled, hasUnsavedChanges, activeFilePath]);
+  }, [content, autoSaveEnabled, hasUnsavedChanges, activeFilePath, settings.autoSaveInterval]);
 
   // Salva come nuovo file
   const handleSaveAs = async () => {
@@ -174,6 +267,10 @@ function App() {
         }
 
         setActiveFilePath(filePath);
+
+        // Save initial snapshot for new file
+        HistoryService.saveSnapshot(filePath, content);
+
         addToast('File salvato con successo!', 'success');
       }
     } catch (error) {
@@ -185,7 +282,7 @@ function App() {
 
   // Toggle tra modalità view e edit
   const toggleEditMode = () => {
-    // Non serve più il check di unsaved changes per switchare mode, 
+    // Non serve più il check di unsaved changes per switchare mode,
     // dato che lo stato è preservato nel tab
     setIsEditMode(!isEditMode);
   };
@@ -225,96 +322,155 @@ function App() {
           toggleEditMode();
         }
       }
+      // Esc to exit presentation mode
+      if (e.key === 'Escape' && isPresentationMode) {
+        setIsPresentationMode(false);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeFilePath, content, hasUnsavedChanges, isEditMode]);
+  }, [activeFilePath, content, hasUnsavedChanges, isEditMode, isPresentationMode]);
 
   return (
-    <div className={`app ${isDarkMode ? 'dark-mode' : ''}`}>
-      <header className="app-header">
-        <h1>AGiEmme Editor</h1>
-        <div className="header-actions">
-          <div className="header-controls">
-            <label className="auto-save-toggle" title="Salvataggio Automatico">
-              <input
-                type="checkbox"
-                checked={autoSaveEnabled}
-                onChange={(e) => setAutoSaveEnabled(e.target.checked)}
-              />
-              <span>Auto-Save</span>
-            </label>
-
-            <button
-              onClick={toggleDarkMode}
-              className="btn-theme"
-              title="Toggle Dark/Light Mode"
-            >
-              {isDarkMode ? '☀️' : '🌙'}
-            </button>
+    <div
+      className={`app ${isDarkMode ? 'dark-mode' : ''} ${isPresentationMode ? 'presentation-mode' : ''}`}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {!isPresentationMode && (
+        <header className="app-header">
+          <div className="app-title">
+            <h1>AGiEmme Editor</h1>
+            <span className="app-version">v{packageJson.version}</span>
           </div>
+          <div className="header-actions">
+            <div className="header-controls">
+              <label className="auto-save-toggle" title="Salvataggio Automatico">
+                <input
+                  type="checkbox"
+                  checked={autoSaveEnabled}
+                  onChange={(e) => setAutoSaveEnabled(e.target.checked)}
+                />
+                <span>Auto-Save</span>
+              </label>
 
-          {activeFilePath && (
-            <button
-              onClick={toggleEditMode}
-              className={isEditMode ? 'btn-mode active' : 'btn-mode'}
-              title="Modalità Edit (Ctrl+E)"
-            >
-              {isEditMode ? '📝 Modalità Edit' : '👁️ Modalità View'}
-            </button>
-          )}
-
-          {isEditMode && activeFilePath && (
-            <button
-              onClick={() => setShowSnippets(!showSnippets)}
-              className={`btn-mode ${showSnippets ? 'active' : ''}`}
-              title="Mostra/Nascondi Snippets"
-            >
-              🧩 Snippets
-            </button>
-          )}
-
-          {isEditMode && activeFilePath && (
-            <>
               <button
-                onClick={() => handleSave(false)}
-                disabled={!activeFilePath || isSaving}
-                className="btn-primary"
-                title="Salva (Ctrl+S)"
+                onClick={toggleDarkMode}
+                className="btn-theme"
+                title="Toggle Dark/Light Mode"
               >
-                {isSaving ? 'Salvataggio...' : 'Salva'}
+                {isDarkMode ? '☀️' : '🌙'}
               </button>
+
               <button
-                onClick={handleSaveAs}
-                disabled={!activeFilePath || isSaving}
-                className="btn-secondary"
-                title="Salva come (Ctrl+Shift+S)"
+                onClick={() => setShowSettings(true)}
+                className="btn-theme"
+                title="Impostazioni"
               >
-                {isSaving ? '...' : 'Salva come...'}
+                ⚙️
               </button>
-            </>
-          )}
-        </div>
-      </header>
+            </div>
+
+            {activeFilePath && (
+              <button
+                onClick={toggleEditMode}
+                className={isEditMode ? 'btn-mode active' : 'btn-mode'}
+                title="Modalità Edit (Ctrl+E)"
+              >
+                {isEditMode ? '📝 Edit' : '👁️ View'}
+              </button>
+            )}
+
+            {isEditMode && activeFilePath && (
+              <>
+                <button
+                  onClick={() => setShowSnippets(!showSnippets)}
+                  className={`btn-mode ${showSnippets ? 'active' : ''}`}
+                  title="Mostra/Nascondi Snippets"
+                >
+                  🧩 Snippets
+                </button>
+                <button
+                  onClick={() => setShowAI(true)}
+                  className="btn-mode ai-btn"
+                  title="Genera con AI"
+                >
+                  ✨ AI
+                </button>
+              </>
+            )}
+
+            {activeFilePath && (
+              <>
+                <button
+                  onClick={() => setShowHistory(!showHistory)}
+                  className={`btn-mode ${showHistory ? 'active' : ''}`}
+                  title="Cronologia Versioni"
+                >
+                  🕒 Storia
+                </button>
+                <button
+                  onClick={() => setIsPresentationMode(true)}
+                  className="btn-mode"
+                  title="Modalità Presentazione"
+                >
+                  📺 Presentazione
+                </button>
+              </>
+            )}
+
+            {isEditMode && activeFilePath && (
+              <>
+                <button
+                  onClick={() => handleSave(false)}
+                  disabled={!activeFilePath || isSaving}
+                  className="btn-primary"
+                  title="Salva (Ctrl+S)"
+                >
+                  {isSaving ? '...' : 'Salva'}
+                </button>
+                <button
+                  onClick={handleSaveAs}
+                  disabled={!activeFilePath || isSaving}
+                  className="btn-secondary"
+                  title="Salva come (Ctrl+Shift+S)"
+                >
+                  {isSaving ? '...' : 'Salva come...'}
+                </button>
+              </>
+            )}
+          </div>
+        </header>
+      )}
 
       <div className="app-content">
-        <FileExplorer
-          onFileSelect={handleFileSelect}
-          currentFilePath={activeFilePath}
-        />
+        {!isPresentationMode && (
+          <FileExplorer
+            onFileSelect={handleFileSelect}
+            currentFilePath={activeFilePath}
+          />
+        )}
 
-        <div className="main-area">
+        <div className="main-area" style={{ position: 'relative' }}>
           {files.length > 0 ? (
             <>
-              <TabBar
-                files={files}
-                activeFile={activeFilePath}
-                onTabSelect={setActiveFilePath}
-                onTabClose={handleTabClose}
-              />
-              <div className={`editor-preview-container ${isEditMode ? 'edit-mode' : 'view-mode'}`}>
-                {isEditMode && <Editor content={content} onChange={handleContentChange} />}
+              {!isPresentationMode && (
+                <TabBar
+                  files={files}
+                  activeFile={activeFilePath}
+                  onTabSelect={setActiveFilePath}
+                  onTabClose={handleTabClose}
+                />
+              )}
+              <div className={`editor-preview-container ${isEditMode && !isPresentationMode ? 'edit-mode' : 'view-mode'}`}>
+                {isEditMode && !isPresentationMode && (
+                  <Editor
+                    content={content}
+                    onChange={handleContentChange}
+                    fontSize={settings.fontSize}
+                  />
+                )}
                 <Preview content={content} />
               </div>
             </>
@@ -323,6 +479,7 @@ function App() {
               <div className="empty-state-content">
                 <h2>Benvenuto in AGiEmme Editor</h2>
                 <p>Seleziona un file dalla barra laterale per iniziare</p>
+                <p className="drag-hint">...oppure trascina un file qui per aprirlo</p>
                 <div className="shortcuts-info">
                   <p>Shortcuts:</p>
                   <ul>
@@ -333,12 +490,46 @@ function App() {
               </div>
             </div>
           )}
+
+          {showHistory && activeFilePath && !isPresentationMode && (
+            <HistoryPanel
+              history={history}
+              onRestore={handleRestoreVersion}
+              onClose={() => setShowHistory(false)}
+            />
+          )}
         </div>
 
-        {isEditMode && showSnippets && activeFilePath && (
+        {isEditMode && showSnippets && activeFilePath && !isPresentationMode && (
           <SnippetLibrary onInsert={handleSnippetInsert} />
         )}
       </div>
+
+      {/* Modals */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        settings={settings}
+        onSave={setSettings}
+      />
+
+      <AIGenerator
+        isOpen={showAI}
+        onClose={() => setShowAI(false)}
+        onGenerate={handleAIGenerated}
+        apiKey={settings.apiKey}
+        provider={settings.aiProvider}
+      />
+
+      {isPresentationMode && (
+        <button
+          className="exit-presentation-btn"
+          onClick={() => setIsPresentationMode(false)}
+          title="Esci dalla presentazione (Esc)"
+        >
+          ×
+        </button>
+      )}
 
       <div className="toast-container">
         {toasts.map(toast => (

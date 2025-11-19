@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import NewFileModal from './NewFileModal';
 import './FileExplorer.css';
 
 const FileExplorer = ({ onFileSelect, currentFilePath }) => {
@@ -6,6 +7,7 @@ const FileExplorer = ({ onFileSelect, currentFilePath }) => {
   const [currentPath, setCurrentPath] = useState(null);
   const [items, setItems] = useState([]);
   const [pathHistory, setPathHistory] = useState([]);
+  const [showNewFileModal, setShowNewFileModal] = useState(false);
 
   const selectDirectory = async () => {
     const dirPath = await window.electronAPI.selectDirectory();
@@ -25,7 +27,7 @@ const FileExplorer = ({ onFileSelect, currentFilePath }) => {
         (item) =>
           item.isDirectory ||
           item.extension === '.md' ||
-          item.extension === '.mmd'||
+          item.extension === '.mmd' ||
           item.extension === '.mermaid'
       );
       setItems(filtered);
@@ -59,12 +61,12 @@ const FileExplorer = ({ onFileSelect, currentFilePath }) => {
     return fullPath.replace(rootPath, '') || '/';
   };
 
-  const handleNewFile = async () => {
+  const openNewFileModal = () => {
     if (!currentPath) return;
+    setShowNewFileModal(true);
+  };
 
-    const fileName = prompt('Nome del nuovo file (es: documento.md):');
-    if (!fileName) return;
-
+  const handleCreateFile = async (fileName) => {
     // Assicurati che abbia l'estensione corretta
     let finalFileName = fileName;
     if (!fileName.endsWith('.md') && !fileName.endsWith('.mmd')) {
@@ -108,7 +110,7 @@ const FileExplorer = ({ onFileSelect, currentFilePath }) => {
           </div>
 
           <div className="explorer-actions">
-            <button onClick={handleNewFile} className="btn-secondary">
+            <button onClick={openNewFileModal} className="btn-secondary">
               + Nuovo File
             </button>
             <button onClick={selectDirectory} className="btn-secondary">
@@ -125,9 +127,8 @@ const FileExplorer = ({ onFileSelect, currentFilePath }) => {
               items.map((item) => (
                 <div
                   key={item.path}
-                  className={`file-item ${
-                    item.path === currentFilePath ? 'active' : ''
-                  }`}
+                  className={`file-item ${item.path === currentFilePath ? 'active' : ''
+                    }`}
                   onClick={() => handleItemClick(item)}
                   title={item.path}
                 >
@@ -141,6 +142,12 @@ const FileExplorer = ({ onFileSelect, currentFilePath }) => {
           </div>
         </>
       )}
+
+      <NewFileModal
+        isOpen={showNewFileModal}
+        onClose={() => setShowNewFileModal(false)}
+        onCreate={handleCreateFile}
+      />
     </div>
   );
 };

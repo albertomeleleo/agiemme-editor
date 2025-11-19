@@ -4,6 +4,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import { mermaid } from 'codemirror-lang-mermaid';
 import { languages } from '@codemirror/language-data';
 import { EditorState } from '@codemirror/state';
+import { search, searchKeymap } from '@codemirror/search';
+import { keymap } from '@codemirror/view';
 import './Editor.css';
 
 const Editor = ({ content, onChange }) => {
@@ -18,6 +20,8 @@ const Editor = ({ content, onChange }) => {
       doc: content || '',
       extensions: [
         basicSetup,
+        keymap.of(searchKeymap),
+        search(),
         markdown({ codeLanguages: languages }), // Supporto per altri linguaggi nei blocchi code
         mermaid(), // Syntax highlighting per Mermaid
         EditorView.updateListener.of((update) => {

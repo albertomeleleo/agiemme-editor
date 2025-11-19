@@ -7,14 +7,16 @@
   overflow: hidden;
 }
 
-.preview-header {
+.preview-toolbar {
   padding: 10px 15px;
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: 20px;
   height: 50px;
+  flex-wrap: wrap;
 }
 
 .preview-title {
@@ -357,12 +359,12 @@
   background-color: #1e1e1e;
 }
 
-.dark-mode .preview-header {
+.dark-mode .preview-toolbar {
   background-color: #252525;
   border-bottom: 1px solid #2a2a2a;
 }
 
-.dark-mode .preview-header h3 {
+.dark-mode .preview-toolbar h3 {
   color: #e0e0e0;
 }
 

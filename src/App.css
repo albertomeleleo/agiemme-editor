@@ -15,9 +15,24 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.app-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
 .app-header h1 {
   font-size: 20px;
   font-weight: 600;
+  margin: 0;
+}
+
+.app-version {
+  font-size: 12px;
+  opacity: 0.8;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .header-actions {
@@ -226,6 +241,75 @@ button:disabled {
 .app.dark-mode .file-name {
   background-color: rgba(255, 255, 255, 0.15);
   color: #e0e0e0;
+}
+
+.drag-hint {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  border: 2px dashed var(--border-color);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+/* Presentation Mode */
+.app.presentation-mode .app-header,
+.app.presentation-mode .file-explorer,
+.app.presentation-mode .tab-bar,
+.app.presentation-mode .editor-container,
+.app.presentation-mode .snippet-library {
+  display: none !important;
+}
+
+.app.presentation-mode .app-content {
+  padding: 0;
+  height: 100vh;
+}
+
+.app.presentation-mode .main-area {
+  height: 100vh;
+}
+
+.app.presentation-mode .editor-preview-container {
+  height: 100%;
+}
+
+.app.presentation-mode .preview-container {
+  height: 100%;
+  border: none;
+}
+
+.exit-presentation-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.exit-presentation-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.ai-btn {
+  background: linear-gradient(45deg, #FF0080, #7928CA);
+  border: none;
+}
+
+.ai-btn:hover {
+  box-shadow: 0 2px 8px rgba(121, 40, 202, 0.4);
 }
 
 .app.dark-mode .app-content {
